@@ -48,7 +48,6 @@ getBandMagnitude index vals = do
 drawScene :: IORef Float -> IORef [Double] -> IO()
 drawScene time bands = do
   t <- readIORef time
-  writeIORef time $! significand(t + 0.0001)
   
 -- clear the screen and the depth bufer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
@@ -146,8 +145,12 @@ main = do
      -- start event processing engine
      forever $ do
        oldBands <- readIORef bands
-       let newBands = map ((+) 0.001) oldBands
-       writeIORef bands newBands
+
+       t <- readIORef time
+       writeIORef time $ t + 1
+       t <- readIORef time
+
+       writeIORef bands [(sin . realToFrac $ t * 0.002 * pi + i * (2 * pi / 8)  ) | i <- [0..7]] 
 
        drawScene time bands
        GLFW.swapBuffers
