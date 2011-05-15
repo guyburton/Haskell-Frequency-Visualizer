@@ -12,10 +12,11 @@ import Graphics.Rendering.GLU.Raw ( gluPerspective )
 import Data.Bits ( (.|.) )
 import System.Exit ( exitWith, ExitCode(..) )
 import Control.Monad ( forever, forM )
-import Data.Time
 import Data.IORef ( IORef, newIORef, readIORef, writeIORef )
 import Data.Colour.RGBSpace.HSV
 import Data.Colour.RGBSpace
+import Control.Concurrent.Thread
+import GuyAudio
 
 initGL :: IO ()
 initGL = do
@@ -45,9 +46,8 @@ getBandMagnitude index vals = do
     listOfVals <- readIORef vals
     return $ realToFrac $ listOfVals !! index
 
-drawScene :: IORef Float -> IORef [Double] -> IO()
-drawScene time bands = do
-  t <- readIORef time
+drawScene :: IORef [Double] -> IO()
+drawScene bands = do
   
 -- clear the screen and the depth bufer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
@@ -123,10 +123,10 @@ main = do
                      , GLFW.displayOptions_numDepthBits = 1
                      -- , GLFW.displayOptions_displayMode  = GLFW.Fullscreen
                      } 
-     time <- newIORef 0
      bands <- newIORef [0.0]
-
-     writeIORef bands [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]
+     writeIORef bands [0..7]
+     updateThread <- forkIO $ playAudio "amen.wav" bands
+     
      -- initialize our window.
      True <- GLFW.openWindow dspOpts
      -- window starts at upper left corner of the screen
@@ -134,23 +134,18 @@ main = do
      -- open a window
      GLFW.setWindowTitle "Guys FreqAnalyzer"
      -- register the function to do all our OpenGL drawing
-     GLFW.setWindowRefreshCallback (drawScene time bands)
+     GLFW.setWindowRefreshCallback (drawScene bands)
      -- register the funciton called when our window is resized
      GLFW.setWindowSizeCallback resizeScene
      -- register the function called when the keyboard is pressed.
      GLFW.setKeyCallback keyPressed
      -- register window close handler
+     
      GLFW.setWindowCloseCallback shutdown
      initGL
+
      -- start event processing engine
      forever $ do
-       oldBands <- readIORef bands
-
-       t <- readIORef time
-       writeIORef time $ t + 1
-       t <- readIORef time
-
-       writeIORef bands [(sin . realToFrac $ t * 0.002 * pi + i * (2 * pi / 8)  ) | i <- [0..7]] 
-
-       drawScene time bands
+       drawScene bands
        GLFW.swapBuffers
+

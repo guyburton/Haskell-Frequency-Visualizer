@@ -1,1 +1,16 @@
+Author: Guy Burton
+Date Edited: 15/05/2011
+
+All code is free to use with no required accreditation or licensing. No warranty of any kind is provided with the software.
+
+Introduction
+============
 This is a simple project which reads in a wave file and plays it whilst visualizing the frequency content with openGL. It is written in response to a Hoodlums meetup in London on May 12th 2011.
+
+Requirements
+============
+OpenGL
+PulseAudio-simple
+WAVE
+pure-FFT
+(all available on cabal)
