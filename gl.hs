@@ -46,8 +46,8 @@ getBandMagnitude index vals = do
     listOfVals <- readIORef vals
     return $ realToFrac $ listOfVals !! index
 
-drawScene :: IORef [Double] -> IO()
-drawScene bands = do
+drawScene :: Int -> IORef [Double] -> IO()
+drawScene num bands = do
   
 -- clear the screen and the depth bufer
   glClear $ fromIntegral  $  gl_COLOR_BUFFER_BIT
@@ -55,14 +55,17 @@ drawScene bands = do
   glLoadIdentity -- reset view
   glTranslatef  (-5.0) (-4.0) (-15.0)
  
-  forM [0 ..7] $ \i -> do
+  forM [0 .. (num-1)] $ \i -> do
     glTranslatef 1.0 0.0 0.0
     glBegin gl_QUADS
 
-    uncurryRGB glColor3f $ hsv (fromIntegral (i * 45)) 1.0 1.0
-
+    -- Cycle through color spectrum for bars
+    uncurryRGB glColor3f $ hsv (fromIntegral (i * (360 div num) )) 1.0 1.0
+    
+    -- Get magnitude for the current bar
     mag <- getBandMagnitude i bands
 
+    -- Draw a cuboid for bar
     glVertex3f (-size) mag 0 -- top left
     glVertex3f ( size) mag 0 -- top right
     glVertex3f ( size) 0 0 -- bottom right
@@ -110,6 +113,17 @@ keyPressed _           _    = return ()
 
 main :: IO ()
 main = do
+    args <- getArgs
+    case args of
+        [input] -> do
+            bands <- newIORef [0.0]
+            writeIORef bands [0..7]
+            updateThread <- forkIO $ playAudio input bands
+            initGL bands
+        _ -> putStrLn "Must specify filename"
+    
+initGL :: IORef [Double] -> IO()
+initGL bands = do
      True <- GLFW.initialize 
      -- get a 640 x 480 window
      let dspOpts = GLFW.defaultDisplayOptions
@@ -123,9 +137,6 @@ main = do
                      , GLFW.displayOptions_numDepthBits = 1
                      -- , GLFW.displayOptions_displayMode  = GLFW.Fullscreen
                      } 
-     bands <- newIORef [0.0]
-     writeIORef bands [0..7]
-     updateThread <- forkIO $ playAudio "amen.wav" bands
      
      -- initialize our window.
      True <- GLFW.openWindow dspOpts
@@ -134,7 +145,7 @@ main = do
      -- open a window
      GLFW.setWindowTitle "Guys FreqAnalyzer"
      -- register the function to do all our OpenGL drawing
-     GLFW.setWindowRefreshCallback (drawScene bands)
+     GLFW.setWindowRefreshCallback (drawScene 8 bands)
      -- register the funciton called when our window is resized
      GLFW.setWindowSizeCallback resizeScene
      -- register the function called when the keyboard is pressed.
@@ -146,6 +157,6 @@ main = do
 
      -- start event processing engine
      forever $ do
-       drawScene bands
+       drawScene 8 bands
        GLFW.swapBuffers
 

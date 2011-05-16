@@ -11,7 +11,7 @@ import Sound.Pulse.Simple
 
 -- Gets a list of samples for the specified channel from the wave file
 getChannel :: Int -> WAVE -> [Float]
-getChannel channel wave = map (\x -> realToFrac . sampleToDouble $ x !! channel) $ waveSamples wave
+getChannel channel wave = map (\x -> realToFrac . sampleToDouble $ xw !! channel) $ waveSamples wave
 
 doFFT :: [Float] -> [Double]
 doFFT samples = map magnitude . fft $ map (\x -> realToFrac x :+ 0) $ samples
@@ -38,20 +38,3 @@ playAudio2 s bands samples = do
     writeIORef bands $ foldFFT 8 $ doFFT $ take 256 samples
     playAudio2 s bands (drop 4096 samples)
 
-sineWaveBands :: IORef Float -> IORef [Double]-> IO ()
-sineWaveBands time bands =
-    forever $ do
-        t <- readIORef time
-        writeIORef time $ t + 1
-        t <- readIORef time
-
-        writeIORef bands [(sin . realToFrac $ t * 0.002 * pi + i * (2 * pi / 8)  ) | i <- [0..7]] 
-
--- Entry point for the application
---main = do
---    args <- getArgs
---    case args of
---        [input] -> do
---            bands <- newIORef [1..8]
---            playAudio input bands
---        _ -> putStrLn "Must specify filename"
