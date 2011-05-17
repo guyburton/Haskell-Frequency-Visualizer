@@ -7,10 +7,17 @@ Introduction
 ============
 This is a simple project which reads in a wave file and plays it whilst visualizing the frequency content with openGL. It is written in response to a Hoodlums meetup in London on May 12th 2011.
 
+Running
+=======
+Compile using ghc --make gl.hs and run ./gl
+
 Requirements
 ============
 OpenGL
+GLUT
 PulseAudio-simple
 WAVE
 pure-FFT
+threads
+colour
 (all available on cabal)

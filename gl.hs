@@ -26,11 +26,6 @@ import Data.Complex
 size :: GLfloat
 size = 0.4
 
-getBandMagnitude :: Int -> IORef [Double] -> IO(GLfloat)
-getBandMagnitude index vals = do
-    listOfVals <- readIORef vals
-    return $ (*) 0.1 $ realToFrac $ listOfVals !! index
-
 drawScene :: IORef [Double] -> IO()
 drawScene bands = do
   -- clear the screen and the depth bufer
@@ -130,14 +125,20 @@ start input = do
 
      mainLoop
 
+getBandMagnitude :: Int -> IORef [Double] -> IO(GLfloat)
+getBandMagnitude index vals = do
+    listOfVals <- readIORef vals
+    return $ (*) 0.1 $ realToFrac $ listOfVals !! index
 
 -- Gets a list of samples for the specified channel from the wave file
 getChannel :: Int -> WAVE -> [Float]
 getChannel channel wave = map (\x -> realToFrac . sampleToDouble $ x !! channel) $ waveSamples wave
 
+-- performs fft on provided sample buffer and returns a magnitude values
 doFFT :: [Float] -> [Double]
 doFFT samples = map magnitude . fft $ map (\x -> realToFrac x :+ 0) $ samples
 
+-- folds the fft output into a number of bins
 foldFFT :: Int -> [Double] -> [Double]
 foldFFT 0 _ = []
 foldFFT bins binMags = 
@@ -148,6 +149,7 @@ foldFFT bins binMags =
 -- Recursively play complete track in sample chunks
 -- Work out the FFT of the first section and write to IO ref
 playAudioChunk :: Simple -> IORef [Double] -> [Float] -> IO(Int)
+playAudioChunk _ _ [] = return 0
 playAudioChunk s bands samples = do
     let buffer = take 8192 samples
     simpleWrite s buffer
