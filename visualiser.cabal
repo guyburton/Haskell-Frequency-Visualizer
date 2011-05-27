@@ -1,0 +1,16 @@
+name:				Haskell-Frequency-Visualiser
+version:            0.0.1
+cabal-version:      >= 1.2
+synopsis:           Haskell Frequency Visualiser
+description:        Music visualiser, using pulse audio and opengl
+stability:          Experimental
+category:           Audio
+copyright:          2011-2011 Guy Burton
+author:             Guy Burton <guy@beatbutchermpc.com>
+homepage:           http://github.com/guy127917/Haskell-Frequency-Visualizer
+build-type:         Simple
+
+Executable visualiser   
+    main-is:        gl.hs
+    build-depends:  base >= 3, pure-fft, WAVE, pulse-simple, threads, colour, OpenGLRaw, GLUT, GLURaw, OpenGL
+    ghc-options:    -O2

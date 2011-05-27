@@ -4,10 +4,10 @@
 
 module Main where
 
-import Graphics.UI.GLUT
+import Graphics.UI.GLUT hiding (GLfloat)
 import Graphics.Rendering.GLU.Raw ( gluPerspective )
 
-import Graphics.Rendering.OpenGL as GL
+import Graphics.Rendering.OpenGL as GL hiding (GLfloat)
 import Graphics.Rendering.OpenGL.Raw
 import Data.IORef
 import Control.Monad
